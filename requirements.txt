@@ -1,6 +1,7 @@
 streamlit
 pandas
+plotly
 matplotlib
 u8darts[torch]
+torch
 scikit-learn
-openpyxl
