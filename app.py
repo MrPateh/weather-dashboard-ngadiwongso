@@ -133,9 +133,6 @@ def load_all_models():
             # 1. Tambahkan map_location="cpu" (Wajib untuk Cloud)
             model = NBEATSModel.load(cfg['model_file'], map_location="cpu")
             
-            # 2. HACK SAKTI: Paksa model mengaku "Saya sudah ditraining!"
-            model._fit_called = True  # <--- INI KUNCINYA
-            
             with open(cfg['scaler_target'], "rb") as f: s_target = pickle.load(f)
             with open(cfg['scaler_cov'], "rb") as f: s_cov = pickle.load(f)
             artifacts[key] = (model, s_target, s_cov)
@@ -519,3 +516,4 @@ with st.expander("Lihat Tabel Data & Download", expanded=False):
         csv_wind = p_wind.to_csv(index=False).encode('utf-8')
 
         st.download_button("📥 Download CSV Angin", data=csv_wind, file_name="prediksi_angin.csv", mime="text/csv")
+
