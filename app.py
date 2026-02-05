@@ -123,12 +123,19 @@ CONFIG = {
 # 3. HELPER FUNCTIONS
 # ==========================================
 
+# Di dalam app.py
+
 @st.cache_resource
 def load_all_models():
     artifacts = {}
     for key, cfg in CONFIG.items():
         try:
-            model = NBEATSModel.load(cfg['model_file'])
+            # 1. Tambahkan map_location="cpu" (Wajib untuk Cloud)
+            model = NBEATSModel.load(cfg['model_file'], map_location="cpu")
+            
+            # 2. HACK SAKTI: Paksa model mengaku "Saya sudah ditraining!"
+            model._fit_called = True  # <--- INI KUNCINYA
+            
             with open(cfg['scaler_target'], "rb") as f: s_target = pickle.load(f)
             with open(cfg['scaler_cov'], "rb") as f: s_cov = pickle.load(f)
             artifacts[key] = (model, s_target, s_cov)
@@ -510,4 +517,5 @@ with st.expander("Lihat Tabel Data & Download", expanded=False):
         st.write("**Kecepatan Angin (m/s)**")
         st.dataframe(p_wind.style.format(subset=['Prediksi (m/s)'], formatter="{:.2f}"), use_container_width=True, hide_index=True)
         csv_wind = p_wind.to_csv(index=False).encode('utf-8')
+
         st.download_button("📥 Download CSV Angin", data=csv_wind, file_name="prediksi_angin.csv", mime="text/csv")
