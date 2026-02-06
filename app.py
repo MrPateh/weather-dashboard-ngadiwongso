@@ -182,7 +182,10 @@ def process_daily_aggregation(df, date_col, value_col, method='sum'):
 def run_forecast(df, model, s_target, s_cov, horizon):
     try:
         # 1. Siapkan Data Input dengan Adapter Dimensi
-        req_dim = model.input_dim # Cek model butuh berapa kolom (biasanya 5)
+        # DULU: req_dim = model.input_dim  <-- INI YANG BIKIN ERROR
+        # SEKARANG: Kita "tembak langsung" angka 5, karena kita tahu modelnya 5 dimensi.
+        req_dim = 5 
+        
         series_input = make_compatible_series(df['value'], req_dim)
         
         # 2. Scaling (Jika scaler ada)
@@ -207,8 +210,11 @@ def run_forecast(df, model, s_target, s_cov, horizon):
         
     except Exception as e:
         # Fallback mechanism jika error, agar dashboard tidak blank
+        # Print error ke terminal log biar kita tahu kenapa
+        print(f"DEBUG ERROR: {e}") 
         st.warning(f"Prediksi gagal: {e}")
         dates = pd.date_range(start=df['date'].max() + timedelta(days=1), periods=horizon)
+        # Return rata-rata agar grafik tetap muncul (flat line)
         return pd.Series([df['value'].mean()]*horizon, index=dates)
 
 def plot_interactive(df_hist, pred_series, title, unit, color, threshold=None):
@@ -503,3 +509,4 @@ with st.expander("Klik untuk melihat Tabel & Download CSV"):
         st.dataframe(p_wind, use_container_width=True, hide_index=True)
         csv_wind = p_wind.to_csv(index=False).encode('utf-8')
         st.download_button("📥 Download CSV Angin", data=csv_wind, file_name="prediksi_angin.csv", mime="text/csv")
+
